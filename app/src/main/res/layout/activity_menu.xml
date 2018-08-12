@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradientbackground"
+    tools:context="cs193a.stanford.edu.tictactoe.MenuActivity">
+    <TextView
+        android:id="@+id/gameName"
+        android:textColor="@android:color/white"
+        android:textSize="50dp"
+        android:padding = "30dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="TIC-TAC-TOE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"/>
+    <LinearLayout
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:weightSum="4"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:textSize="20dp"
+            android:layout_marginBottom="20dp"
+            android:id="@+id/singleBtn"
+            android:background="@drawable/btn_design"
+            android:onClick="singlePlayerSelected"
+            android:layout_weight="1"
+            android:text="Single Player"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:layout_marginBottom="20dp"
+            android:id="@+id/multiBtn"
+            android:background="@drawable/btn_design"
+            android:onClick="multiPlayerSelected"
+            android:layout_weight="1"
+            android:text="Multi Player"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/settingBtn"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/btn_design"
+            android:onClick="settingsClicked"
+            android:layout_weight="1"
+            android:text="Settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/aboutBtn"
+            android:background="@drawable/btn_design"
+            android:onClick="aboutClicked"
+            android:layout_weight="1"
+            android:text="About"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+</LinearLayout>

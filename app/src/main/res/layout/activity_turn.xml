@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:orientation="vertical"
+    android:background="@drawable/gradientbackground"
+    tools:context="cs193a.stanford.edu.tictactoe.TurnActivity">
+
+    <TextView
+        android:layout_marginTop="20dp"
+        android:padding="20dp"
+        android:textSize="40dp"
+        android:gravity="center"
+        android:text="TURN"
+        android:textColor="@android:color/white"
+        android:id="@+id/headingName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:gravity="center"
+        android:weightSum="4"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/humanBtn"
+            android:layout_weight="1"
+            android:background="@drawable/btn_design"
+            android:text="Human"
+            android:layout_marginBottom="20dp"
+            android:onClick="humanClicked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/computerBtn"
+            android:layout_weight="1"
+            android:background="@drawable/btn_design"
+            android:text="Computer"
+            android:onClick="computerClicked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+    <TextView
+        android:textSize="20dp"
+        android:id="@+id/turnId"
+        android:gravity="bottom|right"
+        android:text="First turn "
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>

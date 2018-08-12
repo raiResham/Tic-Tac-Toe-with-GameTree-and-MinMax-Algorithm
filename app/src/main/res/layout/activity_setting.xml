@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradientbackground"
+    android:padding="20dp"
+    tools:context="cs193a.stanford.edu.tictactoe.SettingActivity">
+    <TextView
+        android:id="@+id/headingName"
+        android:textSize="40dp"
+        android:gravity="center"
+        android:text="SETTINGS"
+        android:layout_marginTop="20dp"
+        android:padding="20dp"
+        android:textColor="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:gravity="center"
+        android:weightSum="4"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:textSize="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/btn_design"
+            android:layout_weight="1"
+            android:onClick="soundClicked"
+            android:id="@+id/btn_sound"
+            android:text="Mute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/levelBtn"
+            android:background="@drawable/btn_design"
+            android:layout_weight="1"
+            android:text="Level"
+            android:layout_marginBottom="20dp"
+            android:onClick="levelClicked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:textSize="20dp"
+            android:id="@+id/turnBtn"
+            android:onClick="turnClicked"
+            android:text="Turn"
+            android:background="@drawable/btn_design"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</LinearLayout>

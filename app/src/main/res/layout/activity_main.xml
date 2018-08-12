@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="@drawable/gradientbackground"
+    tools:context="cs193a.stanford.edu.tictactoe.MainActivity">
+
+    <TextView
+        android:layout_marginTop="30dp"
+        android:padding="10dp"
+        android:id="@+id/turnMsg"
+        android:textSize="30dp"
+        android:paddingTop="10dp"
+        android:gravity="center"
+        android:text="hello"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <FrameLayout
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <GridLayout
+            android:id="@+id/grid"
+            android:layout_gravity="center"
+            android:columnCount="3"
+            android:rowCount="3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </GridLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:gravity="center"
+        android:weightSum="5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:textColor="@color/colorAccent"
+            android:layout_marginBottom="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:id="@+id/resetBtn"
+            android:background="@drawable/btn_design"
+            android:onClick="resetClicked"
+            android:text="RESET"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+            android:layout_weight="1"
+            android:textSize="15dp"
+            android:id="@+id/modeId"
+            android:paddingRight="10dp"
+            android:layout_gravity="left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_weight="1"
+            android:textSize="15dp"
+            android:text=""
+            android:id="@+id/levelId"
+            android:paddingRight="10dp"
+            android:gravity="right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+</LinearLayout>
