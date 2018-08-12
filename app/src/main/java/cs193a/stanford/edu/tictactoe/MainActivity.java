@@ -46,7 +46,7 @@ import java.util.Random;
 import static android.widget.GridLayout.*;
 import static java.security.AccessController.getContext;
 
-
+// This is the main entry point of the app
 public class MainActivity extends Activity {
 
     private SoundPool soundPool;
