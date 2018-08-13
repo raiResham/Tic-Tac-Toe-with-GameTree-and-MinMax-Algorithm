@@ -6,45 +6,32 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.media.Image;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
-import android.net.rtp.AudioStream;
+import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
-import android.support.annotation.DrawableRes;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.GridLayout;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.Button;
+import android.widget.GridLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-import static android.widget.GridLayout.*;
-import static java.security.AccessController.getContext;
+import static android.widget.GridLayout.OnClickListener;
 
 // This is the main entry point of the app
 public class MainActivity extends Activity {
@@ -55,8 +42,8 @@ public class MainActivity extends Activity {
     private int soundResetClick;
     private int board[][] = new int[3][3];
     private final static int EMPTY_PIECE = -1;
-    private final static int X_PIECE = 1;
-    private final static int O_PIECE = 2;
+    private final static int X_PIECE = 1;   // Human piece
+    private final static int O_PIECE = 2;   // Computer piece
     private int turn = X_PIECE; // X_PIECE is default as first piece. It is also piece of human opponent in multi-player.
     private int numOfPiecesPlaced = 0;
     private final static int X_PIECE_WON = -10000;
@@ -73,6 +60,9 @@ public class MainActivity extends Activity {
     private Typeface face;
     private SharedPreferences sp;
     private int firstTurn;
+    private ProgressBar progressBar;
+    private Best best = new Best();
+    private boolean doingBackgroundTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +75,8 @@ public class MainActivity extends Activity {
 
         TextView levelView = (TextView) findViewById(R.id.levelId);
         levelView.setTypeface(face);
+
+        progressBar = findViewById(R.id.progressbar);
 
         TextView modeView = (TextView) findViewById(R.id.modeId);
         modeView.setTypeface(face);
@@ -307,11 +299,145 @@ public class MainActivity extends Activity {
             Best best = randomMove();
             cellClicked(cells[best.i][best.j]);
         }else if(mode.equals("single") && level.equals("hard") &&(turn == O_PIECE) && gameOver == false){
+
+            // Disable click in cells as it turn of computer
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    cells[i][j].setEnabled(false);
+                }
+            }
+
+
+
+            // Show progress bar
+            progressBar.setVisibility(View.VISIBLE);
             // level is set to hard
             // Check the player mode and computer turn
-            Best best = chooseMove(O_PIECE, maxdepth);
-            cellClicked(cells[best.i][best.j]);
+
+
+   //         Best best = chooseMove(O_PIECE, maxdepth);
+
+
+
+            doingBackgroundTask = true;
+            new ChooseMove().execute();
+
+
+
+
+
         }
+    }
+
+
+    private class ChooseMove extends AsyncTask<Void, Void, Best>{
+
+        @Override
+        protected Best doInBackground(Void... voids) {
+            Log.e("ChooseMove","doInBackground");
+            Best best = chooseMove(O_PIECE, maxdepth);
+            return best;
+        }
+
+        @Override
+        protected void onPostExecute(Best finalBest) {
+            super.onPostExecute(finalBest);
+            best.i = finalBest.i;
+            best.j = finalBest.j;
+            Log.e("Choosemove", finalBest.i+" ,"+finalBest.j);
+            // Hide progress bar
+            progressBar.setVisibility(View.GONE);
+
+            Log.e("MainActivity",best.i+", "+best.j);
+
+
+
+            // Enable click in cells as computer has made its move
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    cells[i][j].setEnabled(true);
+                }
+            }
+
+            cellClicked(cells[best.i][best.j]);
+            doingBackgroundTask = false;
+
+        }
+
+        public Best chooseMove(int side, int depth){
+            Best myBest = new Best();
+            Best reply = null;
+            int result = evaluate();
+
+            if(result == X_PIECE_WON || result == O_PIECE_WON){
+                myBest.score = result;
+                return myBest;
+            }
+
+            if(draw()){
+                // We set score to zero when draw occurs.
+                myBest.score = 0;
+                return myBest;
+            }
+
+            if(side == O_PIECE){
+                // Set unbelievable worst value so computer is forced to take at least one move no matter if its bad
+                myBest.score = -1000000;
+            }else{
+                // Set unbelievable worst value so Human is forced to take at least one move no matter if its bad
+                myBest.score = 1000000;
+            }
+
+            // Look for possible moves for AI
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    if(isValidMove(i,j)){
+                        doMove(i, j, side);
+                        reply = chooseMove((side==O_PIECE)?X_PIECE:O_PIECE, depth - 1);
+                        undoMove(i,j);
+
+                        if(depth == maxdepth){
+                            if(side == O_PIECE ){
+                                System.out.println(i+ " "+j+" score :"+reply.score);
+                                if(reply.score > myBest.score){
+                                    // clear previous best_moves as new best score is found
+                                    best_moves.clear();
+                                    // add position in best_moves arraylist
+                                    best_moves.add(String.valueOf(i+""+j+reply.score));
+                                }else if(reply.score == myBest.score){
+                                    // add position in best_moves arraylist
+                                    // all moves in best_moves arraylist are equally good
+                                    best_moves.add(String.valueOf(i+""+j+reply.score));
+                                }
+                            }
+                        }
+                        if(side == O_PIECE && reply.score > myBest.score){
+                            // Better move found for AI
+                            myBest.score = reply.score;
+                            myBest.i = i;
+                            myBest.j = j;
+                        }else if( side == X_PIECE && reply.score < myBest.score){
+                            // Human found better move
+                            myBest.score = reply.score;
+                            myBest.i = i;
+                            myBest.j = j;
+                        }
+
+                    }
+                }
+            }
+            // Randomly select among equally good moves from best_moves arraylist of String
+            if(depth == maxdepth){
+                Random r = new Random();
+                int index = r.nextInt(best_moves.size());
+                myBest.i = Character.getNumericValue((best_moves.get(index)).charAt(0));
+                myBest.j = Character.getNumericValue((best_moves.get(index)).charAt(1));
+                best_moves.clear();
+            }
+            return myBest;
+        }
+
+
     }
 
     // Computer makes a random move
@@ -335,6 +461,15 @@ public class MainActivity extends Activity {
     }
 
     private void animate(String msg){
+
+        //reset board after 2 sec
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                resetClicked(null);
+            }
+        },2000);
+
         ArrayList<Animator> anim_list = new ArrayList<Animator>();
         if(msg.equals("win")){
             if (!sp.getBoolean("mute", false) ){
@@ -447,78 +582,78 @@ public class MainActivity extends Activity {
         return CONTINUE;
     }
 
-    private Best chooseMove(int side, int depth){
-        Best myBest = new Best();
-        Best reply = null;
-        int result = evaluate();
-
-        if(result == X_PIECE_WON || result == O_PIECE_WON){
-          myBest.score = result;
-          return myBest;
-        }
-
-        if(draw()){
-            // We set score to zero when draw occurs.
-            myBest.score = 0;
-            return myBest;
-        }
-
-        if(side == O_PIECE){
-            // Set unbelievable worst value so computer is forced to take at least one move no matter if its bad
-            myBest.score = -1000000;
-        }else{
-           // Set unbelievable worst value so Human is forced to take at least one move no matter if its bad
-            myBest.score = 1000000;
-        }
-
-        // Look for possible moves for AI
-        for(int i = 0; i < 3; i++){
-             for(int j = 0; j < 3; j++){
-                if(isValidMove(i,j)){
-                    doMove(i, j, side);
-                    reply = chooseMove((side==O_PIECE)?X_PIECE:O_PIECE, depth - 1);
-                    undoMove(i,j);
-
-                    if(depth == maxdepth){
-                       if(side == O_PIECE ){
-                           System.out.println(i+ " "+j+" score :"+reply.score);
-                           if(reply.score > myBest.score){
-                               // clear previous best_moves as new best score is found
-                               best_moves.clear();
-                               // add position in best_moves arraylist
-                               best_moves.add(String.valueOf(i+""+j+reply.score));
-                           }else if(reply.score == myBest.score){
-                               // add position in best_moves arraylist
-                               // all moves in best_moves arraylist are equally good
-                               best_moves.add(String.valueOf(i+""+j+reply.score));
-                           }
-                       }
-                    }
-                    if(side == O_PIECE && reply.score > myBest.score){
-                        // Better move found for AI
-                        myBest.score = reply.score;
-                        myBest.i = i;
-                        myBest.j = j;
-                    }else if( side == X_PIECE && reply.score < myBest.score){
-                        // Human found better move
-                        myBest.score = reply.score;
-                        myBest.i = i;
-                        myBest.j = j;
-                    }
-
-                }
-            }
-        }
-        // Randomly select among equally good moves from best_moves arraylist of String
-       if(depth == maxdepth){
-           Random r = new Random();
-           int index = r.nextInt(best_moves.size());
-           myBest.i = Character.getNumericValue((best_moves.get(index)).charAt(0));
-           myBest.j = Character.getNumericValue((best_moves.get(index)).charAt(1));
-           best_moves.clear();
-       }
-        return myBest;
-    }
+//    private Best chooseMove(int side, int depth){
+//        Best myBest = new Best();
+//        Best reply = null;
+//        int result = evaluate();
+//
+//        if(result == X_PIECE_WON || result == O_PIECE_WON){
+//          myBest.score = result;
+//          return myBest;
+//        }
+//
+//        if(draw()){
+//            // We set score to zero when draw occurs.
+//            myBest.score = 0;
+//            return myBest;
+//        }
+//
+//        if(side == O_PIECE){
+//            // Set unbelievable worst value so computer is forced to take at least one move no matter if its bad
+//            myBest.score = -1000000;
+//        }else{
+//           // Set unbelievable worst value so Human is forced to take at least one move no matter if its bad
+//            myBest.score = 1000000;
+//        }
+//
+//        // Look for possible moves for AI
+//        for(int i = 0; i < 3; i++){
+//             for(int j = 0; j < 3; j++){
+//                if(isValidMove(i,j)){
+//                    doMove(i, j, side);
+//                    reply = chooseMove((side==O_PIECE)?X_PIECE:O_PIECE, depth - 1);
+//                    undoMove(i,j);
+//
+//                    if(depth == maxdepth){
+//                       if(side == O_PIECE ){
+//                           System.out.println(i+ " "+j+" score :"+reply.score);
+//                           if(reply.score > myBest.score){
+//                               // clear previous best_moves as new best score is found
+//                               best_moves.clear();
+//                               // add position in best_moves arraylist
+//                               best_moves.add(String.valueOf(i+""+j+reply.score));
+//                           }else if(reply.score == myBest.score){
+//                               // add position in best_moves arraylist
+//                               // all moves in best_moves arraylist are equally good
+//                               best_moves.add(String.valueOf(i+""+j+reply.score));
+//                           }
+//                       }
+//                    }
+//                    if(side == O_PIECE && reply.score > myBest.score){
+//                        // Better move found for AI
+//                        myBest.score = reply.score;
+//                        myBest.i = i;
+//                        myBest.j = j;
+//                    }else if( side == X_PIECE && reply.score < myBest.score){
+//                        // Human found better move
+//                        myBest.score = reply.score;
+//                        myBest.i = i;
+//                        myBest.j = j;
+//                    }
+//
+//                }
+//            }
+//        }
+//        // Randomly select among equally good moves from best_moves arraylist of String
+//       if(depth == maxdepth){
+//           Random r = new Random();
+//           int index = r.nextInt(best_moves.size());
+//           myBest.i = Character.getNumericValue((best_moves.get(index)).charAt(0));
+//           myBest.j = Character.getNumericValue((best_moves.get(index)).charAt(1));
+//           best_moves.clear();
+//       }
+//        return myBest;
+//    }
 
     private void doMove(int i, int j , int side){
         board[i][j] = side;
@@ -580,45 +715,47 @@ public class MainActivity extends Activity {
     }
 
     public void resetClicked(View view) {
-
-        if (!sp.getBoolean("mute", false)){
-            // Play click sound
-            soundPool.play(soundResetClick, 1, 1, 0, 0, 1);
-        }
-        // Clear internal board or Fill it with EMPTY_PIECE
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                board[i][j] = EMPTY_PIECE;
+        if(!doingBackgroundTask){
+            if (!sp.getBoolean("mute", false)){
+                // Play click sound
+                soundPool.play(soundResetClick, 1, 1, 0, 0, 1);
             }
-        }
-
-        // Clear Button cell and enable click
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                cells[i][j].setText("");
-                cells[i][j].setEnabled(true);
+            // Clear internal board or Fill it with EMPTY_PIECE
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    board[i][j] = EMPTY_PIECE;
+                }
             }
-        }
 
-        // reset values
-        if(mode.equals("single")){
-            if(firstTurn == X_PIECE){
-                turn = X_PIECE;
-                setTurnMessage("Your turn!");
-                setTurnColor('X');
+            // Clear Button cell and enable click
+            for(int i = 0; i < 3; i++){
+                for(int j = 0; j < 3; j++){
+                    cells[i][j].setText("");
+                    cells[i][j].setEnabled(true);
+                }
+            }
+
+            // reset values
+            if(mode.equals("single")){
+                if(firstTurn == X_PIECE){
+                    turn = X_PIECE;
+                    setTurnMessage("Your turn!");
+                    setTurnColor('X');
+                }else{
+                    turn = O_PIECE;
+                    setTurnMessage("O's turn!");
+                    setTurnColor('O');
+                }
             }else{
-                turn = O_PIECE;
-                setTurnMessage("O's turn!");
-                setTurnColor('O');
+                turn = X_PIECE;
+                setTurnMessage("X's turn!");
+                setTurnColor('X');
             }
-        }else{
-            turn = X_PIECE;
-            setTurnMessage("X's turn!");
-            setTurnColor('X');
+
+            numOfPiecesPlaced = 0;
+            gameOver = false;
+            start();
         }
 
-        numOfPiecesPlaced = 0;
-        gameOver = false;
-        start();
     }
 }
