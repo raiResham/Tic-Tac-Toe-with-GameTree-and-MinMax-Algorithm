@@ -33,6 +33,7 @@
             android:layout_height="wrap_content">
         </GridLayout>
         <ProgressBar
+            android:visibility="gone"
             android:id="@+id/progressbar"
             android:layout_gravity="center"
             android:layout_width="match_parent"
