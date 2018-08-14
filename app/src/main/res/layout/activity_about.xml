@@ -10,7 +10,7 @@
     tools:context="cs193a.stanford.edu.tictactoe.AboutActivity">
     <TextView
         android:id="@+id/headingMsg"
-        android:textColor="@android:color/white"
+
         android:text="ABOUT"
         android:textSize="50dp"
         android:padding = "30dp"
