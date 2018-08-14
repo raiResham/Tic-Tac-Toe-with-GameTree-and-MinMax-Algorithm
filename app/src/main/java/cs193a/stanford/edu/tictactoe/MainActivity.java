@@ -79,6 +79,10 @@ public class MainActivity extends Activity {
 
         progressBar = findViewById(R.id.progressbar);
 
+//        ((ProgressBar)findViewById(R.id.progressbar))
+//                .getIndeterminateDrawable()
+//                .setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+
         TextView modeView = (TextView) findViewById(R.id.modeId);
         modeView.setTypeface(face);
 
